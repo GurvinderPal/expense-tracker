@@ -12,17 +12,39 @@ import messageRoutes from "./routers/messageRoutes.js";
 
 const app = express();
 const server = http.createServer(app)
-const io = new Server(server, {
-	cors: {
-		origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
-		credentials: true
-	}
-})
 const prisma = new PrismaClient()
 const PORT = process.env.PORT || 3000;
 
+// Normalize origin (remove trailing slash)
+function normalizeOrigin(origin) {
+	if (!origin) return origin
+	return origin.replace(/\/$/, '')
+}
+
+const frontendOrigin = normalizeOrigin(process.env.FRONTEND_ORIGIN || "http://localhost:5173")
+
+const io = new Server(server, {
+	cors: {
+		origin: frontendOrigin,
+		credentials: true
+	}
+})
+
 app.use(cors({ 
-	origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173", 
+	origin: (origin, callback) => {
+		// Allow requests with no origin (mobile apps, Postman, etc.)
+		if (!origin) return callback(null, true)
+		
+		// Normalize the request origin (remove trailing slash)
+		const normalizedOrigin = normalizeOrigin(origin)
+		
+		// Check if the normalized origin matches
+		if (normalizedOrigin === frontendOrigin) {
+			callback(null, true)
+		} else {
+			callback(new Error('Not allowed by CORS'))
+		}
+	},
 	credentials: true,
 	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 	allowedHeaders: ['Content-Type', 'Authorization']
