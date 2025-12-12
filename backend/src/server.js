@@ -40,7 +40,8 @@ app.use(cors({
 		
 		// Check if the normalized origin matches
 		if (normalizedOrigin === frontendOrigin) {
-			callback(null, true)
+			// Return the normalized frontend origin (not the request origin)
+			callback(null, frontendOrigin)
 		} else {
 			callback(new Error('Not allowed by CORS'))
 		}
