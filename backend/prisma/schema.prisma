@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,38 +7,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id        Int       @id @default(autoincrement())      
-  username  String    @unique
-  password  String
-  expenses  Expense[]
-  friends   Friend[]  @relation("UserFriends")
-  friendOf  Friend[]  @relation("UserFriendOf")
-  sentMessages     Message[] @relation("SentMessages")
+model User {
+  id               Int       @id @default(autoincrement())
+  username         String    @unique
+  password         String
+  expenses         Expense[]
+  friendOf         Friend[]  @relation("UserFriendOf")
+  friends          Friend[]  @relation("UserFriends")
   receivedMessages Message[] @relation("ReceivedMessages")
+  sentMessages     Message[] @relation("SentMessages")
 }
 
-model Expense{
-  id        Int       @id @default(autoincrement())
+model Expense {
+  id        Int      @id @default(autoincrement())
   userId    Int
-  user      User      @relation(fields: [userId], references: [id])
-  name      String    
+  name      String
   category  String
   date      DateTime
-  createdAt DateTime  @default(now())
-  amount    Float  
-  note      String?     
+  createdAt DateTime @default(now())
+  amount    Float
+  note      String?
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Friend {
   id        Int      @id @default(autoincrement())
   userId    Int
   friendId  Int
-  status    String   @default("accepted") // pending/accepted
+  status    String   @default("accepted")
   createdAt DateTime @default(now())
-
-  user   User @relation("UserFriends", fields: [userId], references: [id])
-  friend User @relation("UserFriendOf", fields: [friendId], references: [id])
+  friend    User     @relation("UserFriendOf", fields: [friendId], references: [id])
+  user      User     @relation("UserFriends", fields: [userId], references: [id])
 }
 
 model Message {
@@ -53,7 +46,6 @@ model Message {
   receiverId Int
   content    String
   createdAt  DateTime @default(now())
-
-  sender   User @relation("SentMessages", fields: [senderId], references: [id])
-  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
 }
